@@ -19,36 +19,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MoreHorizontal } from "lucide-react";
 
-// Typ adresu pobranego z bazy
-type Address = {
-  user_id: number;
-  address_type: string;
-  valid_from: string; // w SQL jest TIMESTAMP, w JS string
-  post_code: string;
-  city: string;
-  country_code: string;
-  street: string;
-  building_number: string;
-  created_at: string;
-  updated_at: string;
-};
-
-// Typ użytkownika pobranego z bazy
-type User = {
-  id: number;
-  first_name: string;
-  last_name: string;
-  initials: string;
-  email: string;
-  status: string;
-  createdAt: string;
-};
+import AddressForm from "@/components/forms/AddressForm";
+import { IAddress, IUser } from "@/types";
+import { deleteAddresAction } from "@/actions/users/address/action";
 
 interface UserAddressesClientProps {
-  user: User;
-  addresses: Address[];
+  user: IUser;
+  addresses: IAddress[];
 }
 
 export default function UserAddressesClient({
@@ -57,6 +42,36 @@ export default function UserAddressesClient({
 }: UserAddressesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [openModal, setOpenModal] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [selectedAddress, setSelectedAddress] =
+    useState<Partial<IAddress> | null>(null);
+
+  const handleCreateClick = () => {
+    setModalMode("create");
+    setSelectedAddress(null);
+    setOpenModal(true);
+  };
+
+  const handleEditClick = (addr: IAddress) => {
+    setModalMode("edit");
+    setSelectedAddress(addr);
+    setOpenModal(true);
+  };
+
+  const handleDeleteClick = async (addr: IAddress) => {
+    try {
+      await deleteAddresAction({
+        userId: user.id,
+        addressType: addr.address_type,
+      });
+
+      router.refresh();
+    } catch (err: any) {
+      console.error("Failed to delete address:", err);
+      alert(`Error deleting address: ${err.message}`);
+    }
+  };
 
   const currentPageParam = Number(searchParams.get("page")) || 1;
   const [pageSize] = useState(3);
@@ -83,7 +98,7 @@ export default function UserAddressesClient({
             ? `${user.first_name} ${user.last_name} – Addresses`
             : "No user"}
         </h1>
-        <Button variant="default" onClick={() => alert("Create address modal")}>
+        <Button variant="default" onClick={handleCreateClick}>
           Create Address
         </Button>
       </div>
@@ -114,20 +129,10 @@ export default function UserAddressesClient({
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() =>
-                          alert(`Edit address: ${address_type} / ${valid_from}`)
-                        }
-                      >
+                      <DropdownMenuItem onClick={() => handleEditClick(addr)}>
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          alert(
-                            `Delete address: ${address_type} / ${valid_from}`
-                          )
-                        }
-                      >
+                      <DropdownMenuItem onClick={() => handleDeleteClick(addr)}>
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -140,7 +145,7 @@ export default function UserAddressesClient({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
@@ -177,6 +182,40 @@ export default function UserAddressesClient({
           </Pagination>
         </div>
       )}
+
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {modalMode === "create" ? "Create Address" : "Edit Address"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <AddressForm
+            userId={user.id}
+            mode={modalMode}
+            oldAddressType={selectedAddress?.address_type}
+            oldValidFrom={selectedAddress?.valid_from}
+            defaultValues={
+              modalMode === "edit"
+                ? {
+                    addressType: selectedAddress?.address_type,
+                    validFrom: selectedAddress?.valid_from,
+                    postCode: selectedAddress?.post_code,
+                    city: selectedAddress?.city,
+                    countryCode: selectedAddress?.country_code,
+                    street: selectedAddress?.street,
+                    buildingNumber: selectedAddress?.building_number,
+                  }
+                : undefined
+            }
+            onSuccess={() => {
+              setOpenModal(false);
+              router.refresh();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

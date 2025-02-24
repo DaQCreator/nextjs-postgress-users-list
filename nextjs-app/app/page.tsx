@@ -11,7 +11,7 @@ export default async function Home() {
   const duration = Date.now() - startTime;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center">
+    <main className="relative flex min-h-screen flex-col md:items-center md:justify-center">
       <Suspense fallback={<TablePlaceholder />}>
         <UsersTableClient users={users} duration={duration} />
       </Suspense>

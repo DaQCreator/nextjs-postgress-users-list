@@ -2,9 +2,10 @@
 
 import { seed } from "@/lib/seed";
 import { sql } from "@/lib/db";
+import { IAddress, IUser } from "@/types";
 
 export async function getUsers() {
-  let data;
+  let data: IUser[];
   let startTime = Date.now();
 
   try {
@@ -13,7 +14,9 @@ export async function getUsers() {
         id: number;
         first_name: string;
         last_name: string;
+        initials: string;
         email: string;
+        status: string;
         createdAt: string; // alias created_at
       }[]
     >`
@@ -39,7 +42,9 @@ export async function getUsers() {
           id: number;
           first_name: string;
           last_name: string;
+          initials: string;
           email: string;
+          status: string;
           createdAt: string;
         }[]
       >`
@@ -89,7 +94,7 @@ export async function getUserById(id: number) {
       WHERE id = ${id}
       LIMIT 1
     `;
-    return user;
+    return user as IUser;
   } catch (e: any) {
     if (e.message.includes('relation "users" does not exist')) {
       await seed();
@@ -104,7 +109,7 @@ export async function getUserAddresses(userId: number) {
     const data = await sql<
       {
         user_id: number;
-        address_type: string;
+        address_type: "HOME" | "INVOICE" | "POST" | "WORK";
         valid_from: string;
         post_code: string;
         city: string;
@@ -130,7 +135,7 @@ export async function getUserAddresses(userId: number) {
       WHERE user_id = ${userId}
       ORDER BY valid_from DESC
     `;
-    return data;
+    return data as IAddress[];
   } catch (e: any) {
     if (e.message.includes('relation "users_addresses" does not exist')) {
       await seed();

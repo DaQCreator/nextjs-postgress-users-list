@@ -23,17 +23,10 @@ import {
 
 import RefreshButton from "../shared/refresh-button";
 import { timeAgo } from "@/lib/serverUtils";
-
-type User = {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  createdAt: string;
-};
+import { IUser } from "@/types";
 
 interface UsersTableClientProps {
-  users: User[];
+  users: IUser[];
   duration: number;
 }
 
@@ -66,7 +59,6 @@ export default function UsersTableClient({
 
   return (
     <div className="bg-white/30 p-8 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">
-      {/* Pasek nagłówkowy */}
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Recent Users</h2>
@@ -84,7 +76,6 @@ export default function UsersTableClient({
         </div>
       </div>
 
-      {/* Wyświetlanie aktualnej strony użytkowników */}
       <div className="divide-y divide-gray-900/5">
         {pageUsers.map((user) => {
           const displayName = `${user.first_name} ${user.last_name}`;
@@ -137,7 +128,7 @@ export default function UsersTableClient({
       </div>
 
       {totalPages > 1 && (
-        <div className="mt-4">
+        <div className="flex justify-center mt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
