@@ -90,8 +90,11 @@ export default function UsersTableClient({
                   router.push(`/user/${user.id}`);
                 }}
               >
-                <p className="font-medium leading-none">{displayName}</p>
+                <p className="font-medium leading-none">
+                  {displayName} - {user.initials}
+                </p>
                 <p className="text-sm text-gray-500">{user.email}</p>
+                <p className="text-sm text-gray-500">Status: {user.status}</p>
               </button>
 
               <div className="flex items-center space-x-2">
