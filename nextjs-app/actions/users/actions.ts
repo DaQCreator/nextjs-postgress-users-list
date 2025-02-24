@@ -1,8 +1,7 @@
 "use server";
-import postgres from "postgres";
-import { seed } from "@/lib/seed";
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: "prefer" });
+import { seed } from "@/lib/seed";
+import { sql } from "@/lib/db";
 
 export async function getUsers() {
   let data;
@@ -61,4 +60,82 @@ export async function getUsers() {
   }
 
   return { data, startTime };
+}
+
+export async function getUserById(id: number) {
+  try {
+    const [user] = await sql<
+      {
+        id: number;
+        first_name: string;
+        last_name: string;
+        initials: string;
+        email: string;
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      }[]
+    >`
+      SELECT 
+        id,
+        first_name,
+        last_name,
+        initials,
+        email,
+        status,
+        created_at AS "createdAt",
+        updated_at AS "updatedAt"
+      FROM users
+      WHERE id = ${id}
+      LIMIT 1
+    `;
+    return user;
+  } catch (e: any) {
+    if (e.message.includes('relation "users" does not exist')) {
+      await seed();
+      return getUserById(id);
+    }
+    throw e;
+  }
+}
+
+export async function getUserAddresses(userId: number) {
+  try {
+    const data = await sql<
+      {
+        user_id: number;
+        address_type: string;
+        valid_from: string;
+        post_code: string;
+        city: string;
+        country_code: string;
+        street: string;
+        building_number: string;
+        created_at: string;
+        updated_at: string;
+      }[]
+    >`
+      SELECT
+        user_id,
+        address_type,
+        valid_from,
+        post_code,
+        city,
+        country_code,
+        street,
+        building_number,
+        created_at,
+        updated_at
+      FROM users_addresses
+      WHERE user_id = ${userId}
+      ORDER BY valid_from DESC
+    `;
+    return data;
+  } catch (e: any) {
+    if (e.message.includes('relation "users_addresses" does not exist')) {
+      await seed();
+      return getUserAddresses(userId);
+    }
+    throw e;
+  }
 }

@@ -1,9 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Suspense } from "react";
-import Table from "@/components/table";
-import TablePlaceholder from "@/components/table-placeholder";
-import ExpandingArrow from "@/components/expanding-arrow";
+import UsersTableClient from "@/components/HomePage/UsersTableClient";
+import TablePlaceholder from "@/components/shared/table-placeholder";
 import { getUsers } from "@/actions/users/actions";
 
 export const preferredRegion = "home";
@@ -16,7 +13,7 @@ export default async function Home() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center">
       <Suspense fallback={<TablePlaceholder />}>
-        <Table users={users} duration={duration} />
+        <UsersTableClient users={users} duration={duration} />
       </Suspense>
     </main>
   );

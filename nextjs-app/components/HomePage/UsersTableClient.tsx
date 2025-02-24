@@ -19,10 +19,9 @@ import {
   PaginationLink,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
 } from "@/components/ui/pagination";
 
-import RefreshButton from "./refresh-button";
+import RefreshButton from "../shared/refresh-button";
 import { timeAgo } from "@/lib/serverUtils";
 
 type User = {
@@ -71,11 +70,10 @@ export default function UsersTableClient({
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Recent Users</h2>
-          <p className="text-sm text-gray-500">
-            Fetched {users.length} users in {duration}ms
-          </p>
+          <p className="text-sm text-gray-500">Fetched in {duration}ms</p>
+          <p className="text-sm text-gray-500">All users: {users.length}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex md:flex-col items-center gap-2">
           <RefreshButton />
           <Button
             variant="default"
@@ -93,15 +91,20 @@ export default function UsersTableClient({
           return (
             <div
               key={user.id}
-              className="flex items-center justify-between py-3"
+              className="flex items-center justify-between py-3 hover:bg-gray/10 hover:cursor-pointer"
             >
-              <div className="space-y-1">
+              <button
+                className="space-y-1 w-full flex flex-col items-start "
+                onClick={() => {
+                  router.push(`/user/${user.id}`);
+                }}
+              >
                 <p className="font-medium leading-none">{displayName}</p>
                 <p className="text-sm text-gray-500">{user.email}</p>
-              </div>
+              </button>
 
               <div className="flex items-center space-x-2">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 min-w-fit">
                   {timeAgo(new Date(user.createdAt))}
                 </p>
                 <DropdownMenu>
@@ -110,11 +113,13 @@ export default function UsersTableClient({
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="z-10">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => alert(`Edit user: ${displayName}`)}
+                      onClick={() => {
+                        router.push(`/user/${user.id}`);
+                      }}
                     >
                       Edit
                     </DropdownMenuItem>
